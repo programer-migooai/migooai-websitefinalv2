@@ -5,20 +5,25 @@ import { imagetools } from 'vite-imagetools';
 
 export default defineConfig({
   build: {
-    assetsInlineLimit: 0,              // לא ינסה inline קבצים כבדים
+    // Prevent inlining of large assets to avoid OOM during build
+    assetsInlineLimit: 0,
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name]-[hash][extname]',
-      },
-    },
+        // Emit all assets under a dedicated folder for clarity
+        assetFileNames: 'assets/[name]-[hash][extname]'
+      }
+    }
   },
   plugins: [
+    // React support
     react(),
+    // Import SVGs in src/components as React components
     svgr({
       include: 'src/components/**/*.svg',
       exclude: 'src/assets/images/**/*.svg',
-      exportAsDefault: true,
+      exportAsDefault: true
     }),
-    imagetools(),
-  ],
+    // Emit all other images (PNG/JPG/large SVGs) as files
+    imagetools()
+  ]
 });
