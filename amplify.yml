@@ -3,7 +3,6 @@ frontend:
   phases:
     preBuild:
       commands:
-        # בודקים שיש .nvmrc ומחליפים ל־Node 20
         - nvm install
         - nvm use
         - npm ci
