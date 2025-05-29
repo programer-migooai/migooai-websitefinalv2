@@ -1,48 +1,32 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
-import fs from 'fs/promises';
-import svgr from '@svgr/rollup';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import svgr from '@svgr/rollup'
+import { imagetools } from 'vite-imagetools'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  resolve: {
-    alias: {
-      src: resolve(__dirname, 'src'),
-    },
-  },
-
-  esbuild: {
-    loader: 'jsx',
-    include: /src\/.*\.jsx?$/,
-    exclude: [],
-  },
-
-  optimizeDeps: {
-    esbuildOptions: {
-      plugins: [
-        {
-          name: 'load-js-files-as-jsx',
-          setup(build) {
-            build.onLoad({ filter: /src\\.*\.js$/ }, async (args) => ({
-              loader: 'jsx',
-              contents: await fs.readFile(args.path, 'utf8'),
-            }));
-          },
-        },
-      ],
-    },
-  },
-
   build: {
-    // Prevent inlining of large assets to avoid OOM during build
+    // 0 = never inline any asset; always emit as separate file
     assetsInlineLimit: 0,
+    rollupOptions: {
+      output: {
+        // put them under /assets so you can see them in the build
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
+    },
   },
 
   plugins: [
-    // Import SVG files as React components
-    svgr({ exportAsDefault: true }),
-    // React plugin
+    // 1. React support
     react(),
+
+    // 2. SVGR only for SVGs in your `src/components` folder:
+    svgr({
+      include: 'src/components/**/*.svg',
+      exclude: 'src/assets/images/**/*.svg',
+      exportAsDefault: true,
+    }),
+
+    // 3. All other images (PNG/JPG/large SVGs) get emitted as files
+    imagetools(),
   ],
-});
+})
